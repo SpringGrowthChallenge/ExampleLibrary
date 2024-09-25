@@ -1,0 +1,34 @@
+## Forma de configurar el gateway en .yml
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: msvc-libreros
+          uri: lb://msvc-libreros
+          ## Condicionales para el endpoint si no se cumplen manda excepcion
+          predicates:
+            - Path=/api/libreros/**
+            ## Accepta cualquier digito
+            - Header=nombre, \d+
+            - Method=GET, POST
+            - Query=nombre
+            - Cookie=nombre,valor
+            - Header=Content-Type, application/json
+          filters:
+            - StripPrefix=2
+            - name: SampleCookie
+              args:
+                message: "Ejemplo de mensaje"
+                name: "nombre atributo"
+                value: "valor"
+        - id: msvc-items
+          uri: lb://msvc-libros
+          predicates:
+            - Path=/api/libros/**
+          filters:
+            - StripPrefix=2
+            ## Filtros por defecto
+            - AddRequestHeader=nombreAtributo, valor
+            - AddResponseHeader=nombreAtributoHeader, valor
+            - AddRequestParameter=nombreAtributoParametro, valor
+            - SetResponseHeader=Content-Type, text/plain
